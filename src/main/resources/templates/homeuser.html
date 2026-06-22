@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Личный кабинет</title>
+    <style>
+        body { font-family: sans-serif; max-width: 900px; margin: 60px auto; }
+        h3 { margin-top: 0; }
+
+        .main-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .accounts-column {
+            flex: 2;
+        }
+
+        .transfer-column {
+            flex: 1;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .account-block {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+
+        .transfer-column input,
+        .transfer-column select {
+            width: 100%;
+            padding: 8px;
+            margin: 6px 0 12px;
+            box-sizing: border-box;
+        }
+
+        .transfer-column button {
+            width: 100%;
+            padding: 10px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .transfer-column button:hover {
+            background-color: #1976D2;
+        }
+
+        .message-success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .message-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+<h1>Личный кабинет</h1>
+<p>Привет, Пользователь! Это ваша личная страница.</p>
+
+<!-- Сообщения -->
+<div th:if="${successMessage}" class="message-success">
+    <span th:text="${successMessage}"></span>
+</div>
+<div th:if="${errorMessage}" class="message-error">
+    <span th:text="${errorMessage}"></span>
+</div>
+
+<div class="main-container">
+
+    <!-- ЛЕВАЯ КОЛОНКА: Список счетов -->
+    <div class="accounts-column">
+
+        <!-- Дебетовые счета -->
+        <div class="account-block">
+            <h3>Дебетовые счета</h3>
+            <div th:if="${#lists.isEmpty(debitAccounts)}">У вас нет дебетовых счетов.</div>
+
+            <div th:each="acc, iterStat : ${debitAccounts}" style="border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px;">
+                <p><strong>Счет №<span th:text="${iterStat.index + 1}"></span></strong></p>
+                <p>Баланс: <span th:text="${acc.balance}"></span> ₽</p>
+
+                <form th:action="@{/account/deposit}" method="post" style="margin-top: 10px;">
+                    <input type="hidden" name="accountId" th:value="${acc.id}">
+
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="number" name="amount" step="0.01" min="0.01" placeholder="Сумма" required
+                               style="flex: 1; padding: 5px;">
+
+                        <!-- Кнопка "Пополнить" — отправит на /account/deposit -->
+                        <button type="submit" name="amount" th:formaction="@{/account/deposit}"
+                                style="background-color: #4CAF50; color: white; border: none; padding: 8px 15px; cursor: pointer;">
+                            Пополнить
+                        </button>
+
+                        <!-- Кнопка "Снять" — отправит на /account/withdraw -->
+                        <button type="submit" name="amount" th:formaction="@{/account/withdrawdebit}"
+                                style="background-color: #f44336; color: white; border: none; padding: 8px 15px; cursor: pointer;">
+                            Снять
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Кредитные счета -->
+        <div class="account-block">
+            <h3>Кредитные счета</h3>
+            <div th:if="${#lists.isEmpty(creditAccounts)}">У вас нет кредитных счетов.</div>
+
+            <div th:each="acc, iterStat : ${creditAccounts}" style="border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px;">
+                <p><strong>Счет №<span th:text="${iterStat.index + 1}"></span></strong></p>
+                <p>Баланс: <span th:text="${acc.balance}"></span> ₽</p>
+                <p>Кредитный лимит: <span th:text="${acc.creditLimit}"></span> ₽</p>
+
+                <form th:action="@{/account/depositcredit}" method="post" style="margin-top: 10px;">
+                    <input type="hidden" name="accountId" th:value="${acc.id}">
+
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="number" name="amount" step="0.01" min="0.01" placeholder="Сумма" required
+                               style="flex: 1; padding: 5px;">
+
+                        <!-- Кнопка "Пополнить" — отправит на /account/depositcredit -->
+                        <button type="submit" name="amount" th:formaction="@{/account/depositcredit}"
+                                style="background-color: #4CAF50; color: white; border: none; padding: 8px 15px; cursor: pointer;">
+                            Пополнить
+                        </button>
+
+                        <!-- Кнопка "Снять" — отправит на /account/credit/withdrawcredit -->
+                        <button type="submit" name="amount" th:formaction="@{/account/withdrawcredit}"
+                                style="background-color: #f44336; color: white; border: none; padding: 8px 15px; cursor: pointer;">
+                            Снять
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Накопительные счета -->
+        <div class="account-block">
+            <h3>Накопительные счета</h3>
+            <div th:if="${#lists.isEmpty(savingsAccounts)}">У вас нет накопительных счетов.</div>
+
+            <div th:each="acc, iterStat : ${savingsAccounts}" style="border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px;">
+                <p><strong>Счет №<span th:text="${iterStat.index + 1}"></span></strong></p>
+                <p>Баланс: <span th:text="${acc.balance}"></span> ₽</p>
+                <p>Ставка: <span th:text="${acc.interestRate}"></span>%</p>
+
+                <form th:action="@{/account/depositsavings}" method="post" style="margin-top: 10px;">
+                    <input type="hidden" name="accountId" th:value="${acc.id}">
+
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="number" name="amount" step="0.01" min="0.01" placeholder="Сумма" required
+                               style="flex: 1; padding: 5px;">
+
+                        <!-- Кнопка "Пополнить" — отправит на /account/savings/deposit -->
+                        <button type="submit" name="amount" th:formaction="@{/account/depositsavings}"
+                                style="background-color: #4CAF50; color: white; border: none; padding: 8px 15px; cursor: pointer;">
+                            Пополнить
+                        </button>
+
+                        <!-- Кнопка "Снять" — отправит на /account/savings/withdraw -->
+                        <button type="submit" name="amount" th:formaction="@{/account/withdrawsavings}"
+                                style="background-color: #f44336; color: white; border: none; padding: 8px 15px; cursor: pointer;">
+                            Снять
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <p><a th:href="@{/scoreadd}" style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">Открыть новый счет</a></p>
+    </div>
+
+    <!-- ПРАВАЯ КОЛОНКА: Форма перевода -->
+    <div class="transfer-column">
+        <h3>Перевод средств</h3>
+
+        <form th:action="@{/account/transfer}" method="post">
+            <label for="fromAccountId">С какого счёта:</label>
+            <select id="fromAccountId" name="fromAccountId" required>
+                <option value="">-- Выберите счёт --</option>
+
+                <!-- 1. Добавляем дебетовые счета -->
+                <option th:each="acc, iterStat : ${debitAccounts}"
+                        th:value="'DEBIT_' + ${acc.id}"
+                        th:text="'Дебетовый №' + ${iterStat.index + 1}">
+                </option>
+
+                <!-- 2. Добавляем кредитные счета -->
+                <option th:each="acc, iterStat : ${creditAccounts}"
+                        th:value="'CREDIT_' + ${acc.id}"
+                        th:text="'Кредитный №' + ${iterStat.index + 1}">
+                </option>
+
+                <!-- 3. Добавляем накопительные счета -->
+                <option th:each="acc, iterStat : ${savingsAccounts}"
+                        th:value="'SAVINGS_' + ${acc.id}"
+                        th:text="'Накопительный №' + ${iterStat.index + 1}">
+                </option>
+            </select>
+
+            <label for="onAccountId">На какой счёт:</label>
+            <select id="onAccountId" name="onAccountId" required>
+                <option value="">-- Выберите счёт --</option>
+
+                <!-- 1. Добавляем дебетовые счета -->
+                <option th:each="acc, iterStat : ${debitAccounts}"
+                        th:value="'DEBIT_' + ${acc.id}"
+                        th:text="'Дебетовый №' + ${iterStat.index + 1}">
+                </option>
+
+                <!-- 2. Добавляем кредитные счета -->
+                <option th:each="acc, iterStat : ${creditAccounts}"
+                        th:value="'CREDIT_' + ${acc.id}"
+                        th:text="'Кредитный №' + ${iterStat.index + 1}">
+                </option>
+
+                <!-- 3. Добавляем накопительные счета -->
+                <option th:each="acc, iterStat : ${savingsAccounts}"
+                        th:value="'SAVINGS_' + ${acc.id}"
+                        th:text="'Накопительный №' + ${iterStat.index + 1}">
+                </option>
+            </select>
+
+            <label for="amount">Сумма:</label>
+            <input type="number" id="amount" name="amount" step="0.01" min="0.01" placeholder="Сумма перевода" required>
+
+            <button type="submit">Перевести</button>
+        </form>
+    </div>
+
+</div>
+
+<br>
+<form th:action="@{/logout}" method="post">
+    <button type="submit">Выйти</button>
+</form>
+</body>
+</html>

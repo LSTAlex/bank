@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Панель администратора</title>
+    <style>
+        body { font-family: sans-serif; max-width: 400px; margin: 60px auto; text-align: center; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+<h1>Панель администратора</h1>
+<!-- Блок управления временем -->
+<div style="background-color: #fff3cd; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #ffc107;">
+    <h3 style="margin-top: 0;">🕐 Банковское время</h3>
+    <p><strong>Текущее время:</strong> <span th:text="${#temporals.format(bankTime, 'dd.MM.yyyy HH:mm')}"></span></p>
+
+    <div th:if="${successMessage}" style="background-color: #d4edda; color: #155724; padding: 8px; border-radius: 3px; margin: 10px 0;">
+        <span th:text="${successMessage}"></span>
+    </div>
+
+    <form th:action="@{/homeadmin/fastforward}" method="post" style="display: inline-block;">
+        <label>Перемотать на </label>
+        <input type="number" name="days" min="1" max="365" value="3" required
+               style="width: 60px; padding: 5px;">
+        <label> дней</label>
+        <button type="submit" style="background-color: #ff9800; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 3px;">
+            Перемотать
+        </button>
+    </form>
+</div>
+
+<p>Добро пожаловать, Администратор! Здесь вы можете управлять системой.</p>
+<br>
+<!-- Управление счетами -->
+<h2>Все счета пользователей</h2>
+
+<div style="display: flex; gap: 10px; margin-bottom: 20px;">
+    <a th:href="@{/homeadmin(type='debit', page=0)}"
+       th:classappend="${currentType == 'debit'} ? 'active'"
+       style="padding: 10px 20px; text-decoration: none; background-color: #f4f4f4; border-radius: 3px;">
+        Дебетовые
+    </a>
+    <a th:href="@{/homeadmin(type='credit', page=0)}"
+       th:classappend="${currentType == 'credit'} ? 'active'"
+       style="padding: 10px 20px; text-decoration: none; background-color: #f4f4f4; border-radius: 3px;">
+        Кредитные
+    </a>
+    <a th:href="@{/homeadmin(type='savings', page=0)}"
+       th:classappend="${currentType == 'savings'} ? 'active'"
+       style="padding: 10px 20px; text-decoration: none; background-color: #f4f4f4; border-radius: 3px;">
+        Накопительные
+    </a>
+</div>
+
+<table style="width: 100%; border-collapse: collapse;">
+    <thead>
+    <tr>
+        <th style="border: 1px solid #ddd; padding: 8px;">ID</th>
+        <th style="border: 1px solid #ddd; padding: 8px;">Пользователь</th>
+        <th style="border: 1px solid #ddd; padding: 8px;">Баланс</th>
+        <th th:if="${currentType == 'credit'}" style="border: 1px solid #ddd; padding: 8px;">Лимит</th>
+        <th th:if="${currentType == 'savings'}" style="border: 1px solid #ddd; padding: 8px;">Ставка</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="acc : ${accountsPage.content}">
+        <td style="border: 1px solid #ddd; padding: 8px;" th:text="${acc.id}"></td>
+        <td style="border: 1px solid #ddd; padding: 8px;" th:text="${acc.user.username}"></td>
+        <td style="border: 1px solid #ddd; padding: 8px;" th:text="${acc.balance} + ' ₽'"></td>
+        <td th:if="${currentType == 'credit'}" style="border: 1px solid #ddd; padding: 8px;" th:text="${acc.creditLimit} + ' ₽'"></td>
+        <td th:if="${currentType == 'savings'}" style="border: 1px solid #ddd; padding: 8px;" th:text="${acc.interestRate} + '%'"></td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- Пагинация -->
+<div th:if="${accountsPage.totalPages > 1}" style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+    <a th:if="${currentPage > 0}"
+       th:href="@{/homeadmin(type=${currentType}, page=${currentPage - 1})}"
+       style="padding: 8px 16px; text-decoration: none; background-color: #2196F3; color: white; border-radius: 3px;">
+        ← Назад
+    </a>
+
+    <span th:text="'Страница ' + ${currentPage + 1} + ' из ' + ${accountsPage.totalPages}"
+          style="padding: 8px 16px;"></span>
+
+    <a th:if="${currentPage < accountsPage.totalPages - 1}"
+       th:href="@{/homeadmin(type=${currentType}, page=${currentPage + 1})}"
+       style="padding: 8px 16px; text-decoration: none; background-color: #2196F3; color: white; border-radius: 3px;">
+        Вперёд →
+    </a>
+</div>
+<form th:action="@{/logout}" method="post">
+    <button type="submit">Выйти</button>
+</form>
+</body>
+</html>

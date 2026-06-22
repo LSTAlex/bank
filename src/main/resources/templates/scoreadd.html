@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Открытие счета</title>
+    <style>
+        body { font-family: sans-serif; max-width: 400px; margin: 60px auto; }
+        input, select { width: 100%; padding: 8px; margin: 6px 0 12px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; cursor: pointer; margin-top: 10px; }
+        .hidden { display: none; }
+        .info { background-color: #f0f0f0; padding: 10px; border-radius: 5px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+<h2>Открытие нового счета</h2>
+
+<p th:if="${successMessage}" style="color:green; font-weight:bold;" th:text="${successMessage}"></p>
+<p th:if="${errorMessage}" style="color:red; font-weight:bold;" th:text="${errorMessage}"></p>
+
+<div class="info">
+    <strong>Лимиты счетов:</strong><br>
+    • Дебетовых: не более 3<br>
+    • Кредитных: не более 2<br>
+    • Накопительных: не более 1
+</div>
+
+<form th:action="@{/scoreadd}" method="post">
+    <label for="accountType">Тип счета:</label>
+    <select id="accountType" name="scoreTypeModel" onchange="toggleFields()" required>
+        <option value="">-- Выберите тип --</option>
+        <option value="DEBIT">Дебетовый</option>
+        <option value="CREDIT">Кредитный</option>
+        <option value="SAVINGS">Накопительный</option>
+    </select>
+
+    <div id="creditLimitField" class="hidden">
+        <label for="creditLimit">Отрицательный кредитный лимит для снятия:</label>
+        <input type="number" id="creditLimit" name="creditLimit" step="0.01" min="-100000" max="0">
+    </div>
+
+    <button type="submit">Открыть счет</button>
+</form>
+
+<p><a th:href="@{/homeuser}">← Вернуться в личный кабинет</a></p>
+
+<script>
+    function toggleFields() {
+        var type = document.getElementById('accountType').value;
+        document.getElementById('creditLimitField').classList.add('hidden');
+
+        if (type === 'CREDIT') {
+            document.getElementById('creditLimitField').classList.remove('hidden');
+        }
+    }
+</script>
+</body>
+</html>
