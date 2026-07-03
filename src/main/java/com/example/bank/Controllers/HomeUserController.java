@@ -1,5 +1,9 @@
 package com.example.bank.Controllers;
 
+import com.example.bank.dto.AccountOperationDto;
+import com.example.bank.dto.TransferDto;
+import com.example.bank.dto.UserAccountViewDto;
+import com.example.bank.mapper.AccountMapper;
 import com.example.bank.model.CreditUsersModel;
 import com.example.bank.model.DebitUsersModel;
 import com.example.bank.model.SavingsUsersModel;
@@ -21,14 +25,16 @@ public class HomeUserController {
     private final DebitUsersRepository debitUsersRepository;
     private final CreditUsersRepository creditUsersRepository;
     private final SavingsUserRpository savingsUserRpository;
+    private final AccountMapper accountMapper;
 
     public HomeUserController(DebitUsersRepository debitUsersRepository,
                               CreditUsersRepository creditUsersRepository,
-                              SavingsUserRpository savingsUserRpository) {
+                              SavingsUserRpository savingsUserRpository, AccountMapper accountMapper) {
 
         this.debitUsersRepository = debitUsersRepository;
         this.creditUsersRepository = creditUsersRepository;
         this.savingsUserRpository = savingsUserRpository;
+        this.accountMapper = accountMapper;
     }
 
     @GetMapping("/homeuser")
@@ -46,10 +52,15 @@ public class HomeUserController {
         List<SavingsUsersModel> savingsAccount = savingsUserRpository.findByUserId(userId);
         savingsAccount.sort(Comparator.comparing(SavingsUsersModel::getId));
 
+        List<UserAccountViewDto> debitDtos = debitAccount.stream().map(accountMapper::toViewDto).toList();
+        List<UserAccountViewDto> creditDtos = creditAccount.stream().map(accountMapper::toViewDto).toList();
+        List<UserAccountViewDto> savingsDtos = savingsAccount.stream().map(accountMapper::toViewDto).toList();
+
         // Передаем в HTML
-        model.addAttribute("debitAccounts", debitAccount);
-        model.addAttribute("creditAccounts", creditAccount);
-        model.addAttribute("savingsAccounts", savingsAccount);
+        model.addAttribute("debitAccounts", debitDtos);
+        model.addAttribute("creditAccounts", creditDtos);
+        model.addAttribute("savingsAccounts", savingsDtos);
+        model.addAttribute("transferDto", new TransferDto());
 
         return "homeuser";
     }

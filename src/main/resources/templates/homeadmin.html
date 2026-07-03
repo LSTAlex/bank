@@ -67,7 +67,7 @@
     <tbody>
     <tr th:each="acc : ${accountsPage.content}">
         <td style="border: 1px solid #ddd; padding: 8px;" th:text="${acc.id}"></td>
-        <td style="border: 1px solid #ddd; padding: 8px;" th:text="${acc.user.username}"></td>
+        <td style="border: 1px solid #ddd; padding: 8px;" th:text="${acc.username}"></td>
         <td style="border: 1px solid #ddd; padding: 8px;" th:text="${acc.balance} + ' ₽'"></td>
         <td th:if="${currentType == 'credit'}" style="border: 1px solid #ddd; padding: 8px;" th:text="${acc.creditLimit} + ' ₽'"></td>
         <td th:if="${currentType == 'savings'}" style="border: 1px solid #ddd; padding: 8px;" th:text="${acc.interestRate} + '%'"></td>

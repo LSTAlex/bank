@@ -2,6 +2,11 @@ package com.example.bank.Controllers;
 
 import com.example.bank.Service.AccountService;
 import com.example.bank.Service.TimeService;
+import com.example.bank.dto.AdminAccountViewDto;
+import com.example.bank.mapper.AccountMapper;
+import com.example.bank.model.CreditUsersModel;
+import com.example.bank.model.DebitUsersModel;
+import com.example.bank.model.SavingsUsersModel;
 import com.example.bank.repository.CreditUsersRepository;
 import com.example.bank.repository.DebitUsersRepository;
 import com.example.bank.repository.SavingsUserRpository;
@@ -24,13 +29,15 @@ public class HomeAdminController {
     private final SavingsUserRpository savingsUserRpository;
     private final TimeService timeService;
     private final AccountService accountService;
+    private final AccountMapper accountMapper;
 
-    public HomeAdminController(DebitUsersRepository debitUsersRepository, CreditUsersRepository creditUsersRepository, SavingsUserRpository savingsUserRpository, TimeService timeService, AccountService accountService) {
+    public HomeAdminController(DebitUsersRepository debitUsersRepository, CreditUsersRepository creditUsersRepository, SavingsUserRpository savingsUserRpository, TimeService timeService, AccountService accountService, AccountMapper accountMapper) {
         this.debitUsersRepository = debitUsersRepository;
         this.creditUsersRepository = creditUsersRepository;
         this.savingsUserRpository = savingsUserRpository;
         this.timeService = timeService;
         this.accountService = accountService;
+        this.accountMapper = accountMapper;
     }
 
 
@@ -39,24 +46,28 @@ public class HomeAdminController {
             @RequestParam(defaultValue = "0") String type, Model model) {
 
         Pageable pageable = PageRequest.of(page,10);
-        Page<?> accountPage;
+        Page<AdminAccountViewDto> accountPage;
         String accountType = type.toUpperCase();
 
         switch (accountType){
             case "CREDIT":
-                accountPage =creditUsersRepository.findAll(pageable);
+                Page<CreditUsersModel> creditPage =creditUsersRepository.findAll(pageable);
+                accountPage = creditPage.map(accountMapper::toAdminViewDto);
                 break;
             case "SAVINGS":
-                accountPage =savingsUserRpository.findAll(pageable);
+                Page<SavingsUsersModel> savingsPage = savingsUserRpository.findAll(pageable);
+                accountPage = savingsPage.map(accountMapper::toAdminViewDto);
                 break;
             default:
-                accountPage =debitUsersRepository.findAll(pageable);
+                Page<DebitUsersModel> debitPage = debitUsersRepository.findAll(pageable);
+                accountPage = debitPage.map(accountMapper::toAdminViewDto);
                 accountType = "DEBIT";
         }
 
         model.addAttribute("accountsPage", accountPage);
         model.addAttribute("currentType", accountType.toLowerCase());
         model.addAttribute("currentPage", page);
+        model.addAttribute("bankTime", timeService.getLocalDateTime());
 
         return "homeadmin";
     }

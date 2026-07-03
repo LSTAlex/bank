@@ -4,25 +4,67 @@
     <meta charset="UTF-8">
     <title>Регистрация</title>
     <style>
-        body { font-family: sans-serif; max-width: 300px; margin: 60px auto; }
-        input, select { width: 100%; padding: 8px; margin: 6px 0 12px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; cursor: pointer; }
+        body { font-family: sans-serif; max-width: 400px; margin: 60px auto; }
+        .message-success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .message-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
-<h2>Регистрация</h2>
-<p th:if="${errorMessage}" style="color:red" th:text="${errorMessage}"></p>
-<p th:if="${successMessage}" style="color:green" th:text="${successMessage}"></p>
+<h1>Регистрация</h1>
+
+<!-- Сообщения -->
+<div th:if="${successMessage}" class="message-success">
+    <span th:text="${successMessage}"></span>
+</div>
+<div th:if="${errorMessage}" class="message-error">
+    <span th:text="${errorMessage}"></span>
+</div>
 
 <form th:action="@{/register}" th:object="${user}" method="post">
     <label for="username">Логин:</label>
-    <input type="text" id="username" th:field="*{username}" required>
+    <input type="text" id="username" th:field="*{username}" placeholder="Введите логин" required/>
 
     <label for="password">Пароль:</label>
-    <input type="password" id="password" th:field="*{password}" required>
+    <input type="password" id="password" th:field="*{password}" placeholder="Введите пароль" required/>
+
+    <label for="confirmPassword">Повторите пароль:</label>
+    <input type="password" id="confirmPassword" th:field="*{confirmPassword}" placeholder="Повторите пароль" required/>
 
     <button type="submit">Зарегистрироваться</button>
 </form>
-<p>Уже есть аккаунт? <a th:href="@{/login}">Войти</a></p>
+
+<p style="text-align: center; margin-top: 20px;">
+    <a th:href="@{/login}">Уже есть аккаунт? Войти</a>
+</p>
 </body>
 </html>

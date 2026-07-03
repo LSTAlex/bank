@@ -1,15 +1,14 @@
 package com.example.bank.Controllers;
 
+import com.example.bank.dto.AccountOperationDto;
+import com.example.bank.dto.TransferDto;
 import com.example.bank.model.UsersPrincipalModel;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import com.example.bank.Service.AccountService;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.math.BigDecimal;
 
 @Controller
 public class AccountOperationController {
@@ -20,8 +19,7 @@ public class AccountOperationController {
     }
 
     @PostMapping("/account/deposit")
-    public String depositAccount(@RequestParam int accountId,
-                                 @RequestParam BigDecimal amount,
+    public String depositAccount(@ModelAttribute AccountOperationDto dto,
                                  Authentication authentication,
                                  RedirectAttributes redirectAttributes) {
 
@@ -29,7 +27,7 @@ public class AccountOperationController {
         int userId = principal.getUsersModel().getId();
 
         try {
-            accountService.depositToDebit(accountId,userId,amount);
+            accountService.depositToDebit(dto.getAccountId(),userId,dto.getAmount());
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
@@ -37,15 +35,14 @@ public class AccountOperationController {
     }
 
     @PostMapping("/account/withdrawdebit")
-    public String withdrawDebit(@RequestParam int accountId,
-                                  @RequestParam BigDecimal amount,
+    public String withdrawDebit(@ModelAttribute AccountOperationDto dto,
                                   Authentication authentication,
                                   RedirectAttributes redirectAttributes){
         UsersPrincipalModel principal = (UsersPrincipalModel) authentication.getPrincipal();
         int userId = principal.getUsersModel().getId();
 
         try{
-            accountService.withdrawFromDebit(accountId,userId,amount);
+            accountService.withdrawFromDebit(dto.getAccountId(),userId,dto.getAmount());
         }catch (RuntimeException e){
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
@@ -53,15 +50,14 @@ public class AccountOperationController {
     }
 
     @PostMapping("/account/depositcredit")
-    public String depositCredit(@RequestParam int accountId,
-                                @RequestParam BigDecimal amount,
+    public String depositCredit(@ModelAttribute AccountOperationDto dto,
                                 Authentication authentication,
                                 RedirectAttributes redirectAttributes){
         UsersPrincipalModel principal = (UsersPrincipalModel) authentication.getPrincipal();
         int userId = principal.getUsersModel().getId();
 
         try{
-            accountService.depositToCredit(accountId,userId,amount);
+            accountService.depositToCredit(dto.getAccountId(), userId,dto.getAmount());
         }catch (RuntimeException e){
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
@@ -69,15 +65,14 @@ public class AccountOperationController {
     }
 
     @PostMapping("/account/withdrawcredit")
-    public String withdrawCredit(@RequestParam int accountId,
-                                @RequestParam BigDecimal amount,
+    public String withdrawCredit(@ModelAttribute AccountOperationDto dto,
                                 Authentication authentication,
                                 RedirectAttributes redirectAttributes){
         UsersPrincipalModel principal = (UsersPrincipalModel) authentication.getPrincipal();
         int userId = principal.getUsersModel().getId();
 
         try{
-            accountService.withdrawFromCredit(accountId,userId,amount);
+            accountService.withdrawFromCredit(dto.getAccountId(), userId,dto.getAmount());
         }catch (RuntimeException e){
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
@@ -85,15 +80,14 @@ public class AccountOperationController {
     }
 
     @PostMapping("/account/depositsavings")
-    public String depositSavings(@RequestParam int accountId,
-                                @RequestParam BigDecimal amount,
+    public String depositSavings(@ModelAttribute AccountOperationDto dto,
                                 Authentication authentication,
                                 RedirectAttributes redirectAttributes){
         UsersPrincipalModel principal = (UsersPrincipalModel) authentication.getPrincipal();
         int userId = principal.getUsersModel().getId();
 
         try{
-            accountService.depositToSavings(accountId,userId,amount);
+            accountService.depositToSavings(dto.getAccountId(), userId,dto.getAmount());
         }catch (RuntimeException e){
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
@@ -101,15 +95,14 @@ public class AccountOperationController {
     }
 
     @PostMapping("/account/withdrawsavings")
-    public String withdrawSavings(@RequestParam int accountId,
-                                 @RequestParam BigDecimal amount,
+    public String withdrawSavings(@ModelAttribute AccountOperationDto dto,
                                  Authentication authentication,
                                  RedirectAttributes redirectAttributes){
         UsersPrincipalModel principal = (UsersPrincipalModel) authentication.getPrincipal();
         int userId = principal.getUsersModel().getId();
 
         try{
-            accountService.withdrawFromSavings(accountId,userId,amount);
+            accountService.withdrawFromSavings(dto.getAccountId(), userId,dto.getAmount());
         }catch (RuntimeException e){
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
@@ -117,24 +110,14 @@ public class AccountOperationController {
     }
 
     @PostMapping("/account/transfer")
-    public String transferAccount(@RequestParam String fromAccountId,
-                                  @RequestParam String onAccountId,
-                                  @RequestParam BigDecimal amount,
+    public String transferAccount(@ModelAttribute TransferDto dto,
                                   Authentication authentication,
                                   RedirectAttributes redirectAttributes){
         UsersPrincipalModel principal = (UsersPrincipalModel) authentication.getPrincipal();
         int userId = principal.getUsersModel().getId();
-
-        String[] fromParts = fromAccountId.split("_");
-        String fromType = fromParts[0];
-        int fromId = Integer.parseInt(fromParts[1]);
-
-        String[] onParts = onAccountId.split("_");
-        String onType = onParts[0];
-        int onId = Integer.parseInt(onParts[1]);
-
         try{
-           accountService.transferFromAccount(fromType, fromId, onType, onId, userId, amount);
+           accountService.transferFromAccount(dto.getFromType(), dto.getFromId(),
+                   dto.getOnType(), dto.getOnId(), userId, dto.getAmount());
         }catch (RuntimeException e){
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }

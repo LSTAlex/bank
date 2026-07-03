@@ -1,5 +1,6 @@
 package com.example.bank.Controllers;
 
+import com.example.bank.dto.CreateAccountDto;
 import com.example.bank.model.UsersModel;
 import com.example.bank.model.UsersPrincipalModel;
 import org.springframework.security.core.Authentication;
@@ -8,6 +9,7 @@ import com.example.bank.Service.AccountService;
 import com.example.bank.model.ScoreTypeModel;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -30,8 +32,7 @@ public class ScoreController {
     }
 
     @PostMapping("/scoreadd")
-    public String scoreAdd(@RequestParam ScoreTypeModel scoreTypeModel,
-                           @RequestParam(required = false) BigDecimal creditLimit,
+    public String scoreAdd(@ModelAttribute CreateAccountDto dto,
                            Authentication authentication,
                            RedirectAttributes redirectAttributes) {
 
@@ -39,18 +40,18 @@ public class ScoreController {
         UsersModel user = usersPrincipalModel.getUsersModel();
 
         try{
-            switch (scoreTypeModel) {
+            switch (dto.getScoreType()) {
                 case DEBIT:
                     accountService.createDebitUsersScore(user);
                     redirectAttributes.addFlashAttribute("successMessage", "Дебетовый счет успешно открыт!");
                     break;
                 case CREDIT:
-                    if (creditLimit == null || creditLimit.compareTo(BigDecimal.ZERO) > 0
-                            || creditLimit.compareTo(new BigDecimal("-100000")) < 0) {
+                    if (dto.getCreditLimit() == null || dto.getCreditLimit().compareTo(BigDecimal.ZERO) > 0
+                            || dto.getCreditLimit().compareTo(new BigDecimal("-100000")) < 0) {
                         redirectAttributes.addFlashAttribute("errorMessage", "Укажите корректный кредитный лимит!");
                         return "redirect:/scoreadd";
                     }
-                    accountService.createCreditUsersScore(user, creditLimit);
+                    accountService.createCreditUsersScore(user, dto.getCreditLimit());
                     redirectAttributes.addFlashAttribute("successMessage", "Кредитный счет успешно открыт!");
                     break;
                 case SAVINGS:
