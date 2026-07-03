@@ -1,11 +1,17 @@
 package com.example.bank.Service;
 
+import com.example.bank.dto.AdminAccountViewDto;
+import com.example.bank.mapper.AccountMapper;
 import com.example.bank.model.*;
 import com.example.bank.repository.CreditUsersRepository;
 import com.example.bank.repository.DebitUsersRepository;
 import com.example.bank.repository.SavingsUserRpository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
 
 import java.math.BigDecimal;
 import java.sql.Time;
@@ -19,16 +25,18 @@ public class AccountService {
     private final CreditUsersRepository creditUsersRepository;
     private final SavingsUserRpository savingsUsersRepository;
     private final TimeService timeService;
+    private final AccountMapper accountMapper;
     private  ScoreTypeModel scoreTypeModel;
 
     public AccountService(DebitUsersRepository debitUsersRepository,
                           CreditUsersRepository creditUsersRepository,
-                          SavingsUserRpository savingsUsersRepository, TimeService timeService) {
+                          SavingsUserRpository savingsUsersRepository, TimeService timeService, AccountMapper accountMapper) {
 
         this.debitUsersRepository = debitUsersRepository;
         this.creditUsersRepository = creditUsersRepository;
         this.savingsUsersRepository = savingsUsersRepository;
         this.timeService = timeService;
+        this.accountMapper = accountMapper;
     }
 
     //-----------------------------create score-----------------------------
@@ -315,5 +323,32 @@ public class AccountService {
 
     private boolean needsMaintenance(LocalDateTime lastDate, LocalDateTime today) {
         return ChronoUnit.DAYS.between(lastDate, today) >= 3;
+    }
+
+    public void pepositorySwitch(int page, String type, Model model)
+    {
+        Pageable pageable = PageRequest.of(page,10);
+        Page<AdminAccountViewDto> accountPage;
+        String accountType = type.toUpperCase();
+
+        switch (accountType){
+            case "CREDIT":
+                Page<CreditUsersModel> creditPage =creditUsersRepository.findAll(pageable);
+                accountPage = creditPage.map(accountMapper::toAdminViewDto);
+                break;
+            case "SAVINGS":
+                Page<SavingsUsersModel> savingsPage = savingsUsersRepository.findAll(pageable);
+                accountPage = savingsPage.map(accountMapper::toAdminViewDto);
+                break;
+            default:
+                Page<DebitUsersModel> debitPage = debitUsersRepository.findAll(pageable);
+                accountPage = debitPage.map(accountMapper::toAdminViewDto);
+                accountType = "DEBIT";
+        }
+
+        model.addAttribute("accountsPage", accountPage);
+        model.addAttribute("currentType", accountType.toLowerCase());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("bankTime", timeService.getLocalDateTime());
     }
 }

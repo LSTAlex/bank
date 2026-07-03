@@ -24,17 +24,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class HomeAdminController {
 
-    private final DebitUsersRepository debitUsersRepository;
-    private final CreditUsersRepository creditUsersRepository;
-    private final SavingsUserRpository savingsUserRpository;
     private final TimeService timeService;
     private final AccountService accountService;
     private final AccountMapper accountMapper;
 
     public HomeAdminController(DebitUsersRepository debitUsersRepository, CreditUsersRepository creditUsersRepository, SavingsUserRpository savingsUserRpository, TimeService timeService, AccountService accountService, AccountMapper accountMapper) {
-        this.debitUsersRepository = debitUsersRepository;
-        this.creditUsersRepository = creditUsersRepository;
-        this.savingsUserRpository = savingsUserRpository;
+
         this.timeService = timeService;
         this.accountService = accountService;
         this.accountMapper = accountMapper;
@@ -44,31 +39,7 @@ public class HomeAdminController {
     @GetMapping("/homeadmin")
     public String homeAdmin(@RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "0") String type, Model model) {
-
-        Pageable pageable = PageRequest.of(page,10);
-        Page<AdminAccountViewDto> accountPage;
-        String accountType = type.toUpperCase();
-
-        switch (accountType){
-            case "CREDIT":
-                Page<CreditUsersModel> creditPage =creditUsersRepository.findAll(pageable);
-                accountPage = creditPage.map(accountMapper::toAdminViewDto);
-                break;
-            case "SAVINGS":
-                Page<SavingsUsersModel> savingsPage = savingsUserRpository.findAll(pageable);
-                accountPage = savingsPage.map(accountMapper::toAdminViewDto);
-                break;
-            default:
-                Page<DebitUsersModel> debitPage = debitUsersRepository.findAll(pageable);
-                accountPage = debitPage.map(accountMapper::toAdminViewDto);
-                accountType = "DEBIT";
-        }
-
-        model.addAttribute("accountsPage", accountPage);
-        model.addAttribute("currentType", accountType.toLowerCase());
-        model.addAttribute("currentPage", page);
-        model.addAttribute("bankTime", timeService.getLocalDateTime());
-
+        accountService.pepositorySwitch(page,type,model);
         return "homeadmin";
     }
 
