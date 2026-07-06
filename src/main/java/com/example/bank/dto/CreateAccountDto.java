@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 
 @Data
 public class CreateAccountDto {
-    @NotNull
     private ScoreTypeModel scoreTypeModel;
     private BigDecimal creditLimit;
 }
