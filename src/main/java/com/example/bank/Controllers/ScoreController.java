@@ -11,10 +11,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.math.BigDecimal;
 
 @Controller
 public class ScoreController {
@@ -40,14 +38,18 @@ public class ScoreController {
         UsersModel user = usersPrincipalModel.getUsersModel();
 
         try{
-            switch (dto.getScoreType()) {
+            if (dto.getScoreTypeModel() == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Выберите тип счета");
+                return "redirect:/scoreadd";
+            }
+
+            switch (dto.getScoreTypeModel()) {
                 case DEBIT:
                     accountService.createDebitUsersScore(user);
                     redirectAttributes.addFlashAttribute("successMessage", "Дебетовый счет успешно открыт!");
                     break;
                 case CREDIT:
-                    if (dto.getCreditLimit() == null || dto.getCreditLimit().compareTo(BigDecimal.ZERO) > 0
-                            || dto.getCreditLimit().compareTo(new BigDecimal("-100000")) < 0) {
+                    if (accountService.checkCreditLimit(dto)) {
                         redirectAttributes.addFlashAttribute("errorMessage", "Укажите корректный кредитный лимит!");
                         return "redirect:/scoreadd";
                     }

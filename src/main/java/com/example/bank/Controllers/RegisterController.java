@@ -29,7 +29,7 @@ public class RegisterController {
 
        if (bindingResult.hasErrors()) {return "register";}
 
-       if (!dto.getPassword().equals(dto.getConfirmPassword())) {
+       if (myUserService.ckeckPassword(dto)) {
            redirectAttributes.addFlashAttribute("errorMessage",
                    "Пароли не совпадают!");
            return "redirect:/register";

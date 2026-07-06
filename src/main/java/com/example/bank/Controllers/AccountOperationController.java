@@ -22,12 +22,8 @@ public class AccountOperationController {
     public String depositAccount(@ModelAttribute AccountOperationDto dto,
                                  Authentication authentication,
                                  RedirectAttributes redirectAttributes) {
-
-        UsersPrincipalModel principal = (UsersPrincipalModel) authentication.getPrincipal();
-        int userId = principal.getUsersModel().getId();
-
         try {
-            accountService.depositToDebit(dto.getAccountId(),userId,dto.getAmount());
+            accountService.depositToDebit(dto.getAccountId(),getUserId(authentication),dto.getAmount());
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
@@ -38,11 +34,8 @@ public class AccountOperationController {
     public String withdrawDebit(@ModelAttribute AccountOperationDto dto,
                                   Authentication authentication,
                                   RedirectAttributes redirectAttributes){
-        UsersPrincipalModel principal = (UsersPrincipalModel) authentication.getPrincipal();
-        int userId = principal.getUsersModel().getId();
-
         try{
-            accountService.withdrawFromDebit(dto.getAccountId(),userId,dto.getAmount());
+            accountService.withdrawFromDebit(dto.getAccountId(),getUserId(authentication),dto.getAmount());
         }catch (RuntimeException e){
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
@@ -53,11 +46,8 @@ public class AccountOperationController {
     public String depositCredit(@ModelAttribute AccountOperationDto dto,
                                 Authentication authentication,
                                 RedirectAttributes redirectAttributes){
-        UsersPrincipalModel principal = (UsersPrincipalModel) authentication.getPrincipal();
-        int userId = principal.getUsersModel().getId();
-
         try{
-            accountService.depositToCredit(dto.getAccountId(), userId,dto.getAmount());
+            accountService.depositToCredit(dto.getAccountId(), getUserId(authentication),dto.getAmount());
         }catch (RuntimeException e){
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
@@ -68,11 +58,8 @@ public class AccountOperationController {
     public String withdrawCredit(@ModelAttribute AccountOperationDto dto,
                                 Authentication authentication,
                                 RedirectAttributes redirectAttributes){
-        UsersPrincipalModel principal = (UsersPrincipalModel) authentication.getPrincipal();
-        int userId = principal.getUsersModel().getId();
-
         try{
-            accountService.withdrawFromCredit(dto.getAccountId(), userId,dto.getAmount());
+            accountService.withdrawFromCredit(dto.getAccountId(), getUserId(authentication),dto.getAmount());
         }catch (RuntimeException e){
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
@@ -83,11 +70,8 @@ public class AccountOperationController {
     public String depositSavings(@ModelAttribute AccountOperationDto dto,
                                 Authentication authentication,
                                 RedirectAttributes redirectAttributes){
-        UsersPrincipalModel principal = (UsersPrincipalModel) authentication.getPrincipal();
-        int userId = principal.getUsersModel().getId();
-
         try{
-            accountService.depositToSavings(dto.getAccountId(), userId,dto.getAmount());
+            accountService.depositToSavings(dto.getAccountId(), getUserId(authentication),dto.getAmount());
         }catch (RuntimeException e){
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
@@ -98,11 +82,8 @@ public class AccountOperationController {
     public String withdrawSavings(@ModelAttribute AccountOperationDto dto,
                                  Authentication authentication,
                                  RedirectAttributes redirectAttributes){
-        UsersPrincipalModel principal = (UsersPrincipalModel) authentication.getPrincipal();
-        int userId = principal.getUsersModel().getId();
-
         try{
-            accountService.withdrawFromSavings(dto.getAccountId(), userId,dto.getAmount());
+            accountService.withdrawFromSavings(dto.getAccountId(), getUserId(authentication),dto.getAmount());
         }catch (RuntimeException e){
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
@@ -113,14 +94,17 @@ public class AccountOperationController {
     public String transferAccount(@ModelAttribute TransferDto dto,
                                   Authentication authentication,
                                   RedirectAttributes redirectAttributes){
-        UsersPrincipalModel principal = (UsersPrincipalModel) authentication.getPrincipal();
-        int userId = principal.getUsersModel().getId();
         try{
            accountService.transferFromAccount(dto.getFromType(), dto.getFromId(),
-                   dto.getOnType(), dto.getOnId(), userId, dto.getAmount());
+                   dto.getOnType(), dto.getOnId(), getUserId(authentication), dto.getAmount());
         }catch (RuntimeException e){
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/homeuser";
+    }
+
+    private int getUserId(Authentication authentication){
+        UsersPrincipalModel principal = (UsersPrincipalModel) authentication.getPrincipal();
+        return principal.getUsersModel().getId();
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class MyUserService {
 
+
     private final UsersRepository usersRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(12);
     private final UserMapper userMapper;
@@ -33,4 +34,9 @@ public class MyUserService {
             return false;
         }
     }
+
+    public boolean ckeckPassword(UserRegistrationDto dto){
+        return !dto.getPassword().equals(dto.getConfirmPassword());
+    }
+
 }

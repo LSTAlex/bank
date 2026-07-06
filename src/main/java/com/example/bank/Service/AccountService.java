@@ -1,6 +1,7 @@
 package com.example.bank.Service;
 
 import com.example.bank.dto.AdminAccountViewDto;
+import com.example.bank.dto.CreateAccountDto;
 import com.example.bank.mapper.AccountMapper;
 import com.example.bank.model.*;
 import com.example.bank.repository.CreditUsersRepository;
@@ -350,5 +351,11 @@ public class AccountService {
         model.addAttribute("currentType", accountType.toLowerCase());
         model.addAttribute("currentPage", page);
         model.addAttribute("bankTime", timeService.getLocalDateTime());
+    }
+
+    public boolean checkCreditLimit(CreateAccountDto dto)
+    {
+        return dto.getCreditLimit() == null || dto.getCreditLimit().compareTo(BigDecimal.ZERO) > 0
+                || dto.getCreditLimit().compareTo(new BigDecimal("-100000")) < 0;
     }
 }
